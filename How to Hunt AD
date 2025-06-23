@@ -1,0 +1,34 @@
+Active Directory Path taking for OSCP
+
+
+Given a Username and Password for 1 out of 4 given machines
+Enumerate other users ON said computer
+Enumerate their permissions, if exist
+User
+Group
+Computer
+Etc
+Enumerate self permissions
+Identify possible users on other machines
+From internal only
+Network communications, ping other machines, identify if can ping other machines
+From external only
+Usual host testing
+From external as internal
+Tunneling basically
+Install like nmap, a bunch of other network tools
+Ss
+Netstat
+Ifconfig
+Nmap
+Ncat
+Identify services on current machine
+Maybe someone from other machine leaves password, hash, username in the 
+FTP
+SMB
+SQL DATABASE
+Check the logs on a given machine for evidence of others
+Identify services on other machines
+See Lateral Movement section in OCD Mind Map
+Identify if services are on the other machines
+If they do on theirs, but yours do not, attempt to match the machine services, like imagine if RDP is seen on a lateral user machine but not yours, download RDP and attempt to connect to it.

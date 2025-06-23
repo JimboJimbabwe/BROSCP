@@ -1,0 +1,180 @@
+// Browser Storage Extractor
+// Paste this entire script into the browser console when visiting a potentially vulnerable page
+
+(function extractBrowserStorageData() {
+    // Function to sanitize URL for filename
+    function sanitizeForFilename(url) {
+        return url.replace(/[^a-z0-9]/gi, '_').substring(0, 100);
+    }
+
+    // Get current URL and timestamp
+    const currentUrl = window.location.href;
+    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+    const filename = `storage_dump_${sanitizeForFilename(currentUrl)}_${timestamp}.json`;
+    
+    // Object to store all data
+    const storageData = {
+        url: currentUrl,
+        title: document.title,
+        timestamp: new Date().toISOString(),
+        cookies: {},
+        localStorage: {},
+        sessionStorage: {},
+        documentContent: document.documentElement.outerHTML,
+        headers: {},
+        forms: [],
+        inputs: [],
+        scripts: [],
+        iframes: [],
+        links: []
+    };
+    
+    // Extract cookies
+    document.cookie.split(';').forEach(cookie => {
+        if (cookie.trim()) {
+            const parts = cookie.trim().split('=');
+            const name = parts.shift();
+            const value = parts.join('=');
+            storageData.cookies[name] = value;
+        }
+    });
+    
+    // Extract localStorage
+    try {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            storageData.localStorage[key] = localStorage.getItem(key);
+        }
+    } catch (e) {
+        storageData.localStorage._error = e.toString();
+    }
+    
+    // Extract sessionStorage
+    try {
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            storageData.sessionStorage[key] = sessionStorage.getItem(key);
+        }
+    } catch (e) {
+        storageData.sessionStorage._error = e.toString();
+    }
+
+    // Get response headers using the performance API
+    try {
+        const entries = performance.getEntriesByType('navigation');
+        if (entries.length > 0 && entries[0].responseHeaders) {
+            storageData.headers = entries[0].responseHeaders;
+        }
+    } catch (e) {
+        storageData.headers._error = e.toString();
+    }
+    
+    // Extract form data
+    document.querySelectorAll('form').forEach((form, index) => {
+        const formData = {
+            id: form.id || `form_${index}`,
+            action: form.action,
+            method: form.method,
+            elements: []
+        };
+        
+        Array.from(form.elements).forEach(element => {
+            if (element.name) {
+                formData.elements.push({
+                    name: element.name,
+                    type: element.type,
+                    value: element.type !== 'password' ? element.value : '[REDACTED]',
+                    placeholder: element.placeholder || ''
+                });
+            }
+        });
+        
+        storageData.forms.push(formData);
+    });
+    
+    // Extract input fields (outside forms)
+    document.querySelectorAll('input:not(form input)').forEach(input => {
+        if (input.name) {
+            storageData.inputs.push({
+                name: input.name,
+                type: input.type,
+                value: input.type !== 'password' ? input.value : '[REDACTED]',
+                placeholder: input.placeholder || ''
+            });
+        }
+    });
+    
+    // Extract script sources
+    document.querySelectorAll('script[src]').forEach(script => {
+        storageData.scripts.push(script.src);
+    });
+    
+    // Extract iframes
+    document.querySelectorAll('iframe').forEach(iframe => {
+        storageData.iframes.push({
+            src: iframe.src,
+            name: iframe.name || ''
+        });
+    });
+    
+    // Extract links
+    document.querySelectorAll('a[href]').forEach(link => {
+        storageData.links.push({
+            href: link.href,
+            text: link.textContent.trim().substring(0, 50)
+        });
+    });
+    
+    // Search for potential sensitive data in the DOM
+    const sensitiveDataRegexes = {
+        email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+        phoneUS: /\b(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}\b/g,
+        creditCard: /\b(?:\d[ -]*?){13,16}\b/g,
+        ssn: /\b\d{3}[-]?\d{2}[-]?\d{4}\b/g,
+        apiKey: /['"]?[a-zA-Z0-9_-]*api[_-]?key['"]?\s*[:=]\s*['"]([a-zA-Z0-9]{16,64})['"]/gi,
+        authToken: /['"]?[a-zA-Z0-9_-]*token['"]?\s*[:=]\s*['"]([a-zA-Z0-9]{16,64})['"]/gi,
+        jwt: /eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/g
+    };
+    
+    storageData.sensitiveDataFound = {};
+    
+    const domText = document.body.innerText;
+    for (const [type, regex] of Object.entries(sensitiveDataRegexes)) {
+        const matches = domText.match(regex);
+        if (matches) {
+            storageData.sensitiveDataFound[type] = Array.from(new Set(matches)).slice(0, 10); // Limit to 10 unique findings
+        }
+    }
+    
+    // Convert the data to a JSON string
+    const jsonData = JSON.stringify(storageData, null, 2);
+    
+    // Create a download link
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = filename;
+    
+    // Append to body, click, and remove
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    
+    // Log info to console
+    console.log(`Storage data extracted and saved as ${filename}`);
+    console.log(`Found ${Object.keys(storageData.localStorage).length} localStorage items`);
+    console.log(`Found ${Object.keys(storageData.sessionStorage).length} sessionStorage items`);
+    console.log(`Found ${Object.keys(storageData.cookies).length} cookies`);
+    
+    // Return summary for console display
+    return {
+        message: 'Storage extraction complete! File downloaded.',
+        filename: filename,
+        summary: {
+            localStorage: Object.keys(storageData.localStorage),
+            sessionStorage: Object.keys(storageData.sessionStorage),
+            cookies: Object.keys(storageData.cookies),
+            sensitiveDataFound: Object.keys(storageData.sensitiveDataFound)
+        }
+    };
+})();

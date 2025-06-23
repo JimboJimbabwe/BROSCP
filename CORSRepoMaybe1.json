@@ -1,0 +1,172 @@
+{
+  "cors_vulnerability_indicators": {
+    "response_headers": {
+      "access_control_allow_origin": {
+        "patterns": [
+          "Access-Control-Allow-Origin: *",
+          "Access-Control-Allow-Origin: null",
+          "Access-Control-Allow-Origin: https://attacker-controlled.com",
+          "Access-Control-Allow-Origin: https://example.com https://evil.com"
+        ],
+        "risk_level": "high"
+      },
+      "access_control_allow_credentials": {
+        "patterns": [
+          "Access-Control-Allow-Credentials: true (with Access-Control-Allow-Origin: *)",
+          "Access-Control-Allow-Credentials: true (with Access-Control-Allow-Origin: https://attacker.com)"
+        ],
+        "risk_level": "critical"
+      },
+      "access_control_allow_methods": {
+        "patterns": [
+          "Access-Control-Allow-Methods: *",
+          "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS",
+          "Access-Control-Allow-Methods: PUT, DELETE (on /admin/ endpoints)"
+        ],
+        "risk_level": "medium"
+      },
+      "access_control_allow_headers": {
+        "patterns": [
+          "Access-Control-Allow-Headers: *",
+          "Access-Control-Allow-Headers: Authorization, X-API-Key, Authentication-Token",
+          "Access-Control-Allow-Headers: Cookie, X-CSRF-Token, X-Session-ID"
+        ],
+        "risk_level": "medium"
+      },
+      "access_control_expose_headers": {
+        "patterns": [
+          "Access-Control-Expose-Headers: Set-Cookie",
+          "Access-Control-Expose-Headers: Authorization",
+          "Access-Control-Expose-Headers: X-API-Key, X-Auth-Token",
+          "Access-Control-Expose-Headers: X-CSRF-Token, X-Session-ID",
+          "Access-Control-Expose-Headers: WWW-Authenticate"
+        ],
+        "risk_level": "medium"
+      },
+      "access_control_max_age": {
+        "patterns": [
+          "Access-Control-Max-Age: 86400",
+          "Access-Control-Max-Age: 604800",
+          "Access-Control-Max-Age: 2592000"
+        ],
+        "risk_level": "low"
+      }
+    },
+    "request_patterns": {
+      "origin_header_parsing": {
+        "patterns": [
+          "Origin: evil.trusted-domain.com",
+          "Origin: trusted-domain.com.evil.com",
+          "Origin: https%3A%2F%2Fevil.com",
+          "Origin: https://trusted-domain.com%60evil.com",
+          "Origin: https://trusted-domain.com%09evil.com",
+          "Origin: trusted-domain.com.%0Aevil.com",
+          "Origin: null"
+        ],
+        "risk_level": "high"
+      },
+      "preflight_issues": {
+        "patterns": [
+          "OPTIONS request missing for PUT/DELETE methods",
+          "OPTIONS response different from actual request (ACAO: * in preflight, but specific origin in actual)",
+          "Missing OPTIONS for requests with custom headers: X-API-Key, Authorization"
+        ],
+        "risk_level": "medium"
+      }
+    },
+    "response_patterns": {
+      "error_messages": {
+        "patterns": [
+          "Error: CORS policy violation, allowed origins are: [internal.network.local]",
+          "Stack trace showing CorsConfigurationSource bean initialization",
+          "DEBUG: Origin 'https://example.com' not allowed for resource '/api/user'",
+          "CORS validation failed: Origin 'null' not found in whitelist"
+        ],
+        "risk_level": "medium"
+      },
+      "data_responses": {
+        "patterns": [
+          "JSON response with PII and permissive CORS headers",
+          "Response containing internal IP addresses: 10.0.0.X, 172.16.X.X, 192.168.X.X",
+          "Response containing authentication tokens: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "Response containing API keys: sk_live_, pk_live_, api_key_, access_token_"
+        ],
+        "risk_level": "critical"
+      },
+      "http_codes": {
+        "patterns": [
+          "200 OK with Access-Control-Allow-Origin: * and sensitive data",
+          "403 Forbidden with error message containing CORS configuration details",
+          "500 Internal Server Error with stack trace mentioning CORS filter/middleware"
+        ],
+        "risk_level": "low"
+      }
+    },
+    "implementation_patterns": {
+      "mixed_security": {
+        "patterns": [
+          "Endpoint accepting JSONP via ?callback=functionName alongside CORS headers",
+          "Endpoint with both ?jsonp=callback and Access-Control-Allow-Origin header",
+          "CORS headers on endpoint that also accepts cross-domain form posts"
+        ],
+        "risk_level": "medium"
+      },
+      "framework_signatures": {
+        "patterns": [
+          "Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers (Spring Security)",
+          "X-Powered-By: Express alongside default Express CORS middleware settings",
+          "Django-CORS-Headers/X.X.X in Server or X-Powered-By headers"
+        ],
+        "risk_level": "low"
+      },
+      "inconsistent_config": {
+        "patterns": [
+          "api.example.com with Access-Control-Allow-Origin: * but admin.example.com with specific origins",
+          "http://example.com allowing different origins than https://example.com",
+          "v1 API endpoints with strict CORS but v2 with permissive settings"
+        ],
+        "risk_level": "medium"
+      }
+    },
+    "internal_network": {
+      "private_ranges": {
+        "patterns": [
+          "Access-Control-Allow-Origin: http://10.0.0.1",
+          "Access-Control-Allow-Origin: https://192.168.1.100",
+          "Access-Control-Allow-Origin: https://172.16.0.1",
+          "Access-Control-Allow-Origin: https://internal-jenkins.company.local",
+          "Access-Control-Allow-Origin: https://dev-instance.internal"
+        ],
+        "risk_level": "high"
+      },
+      "service_indicators": {
+        "patterns": [
+          "Server: internal-tomcat-8.5.11",
+          "X-Environment: development",
+          "X-Powered-By: internal-framework/1.2.3",
+          "ACAO containing staging.api.internal, dev.api.internal"
+        ],
+        "risk_level": "high"
+      }
+    },
+    "security_misconfigs": {
+      "combined_vulnerabilities": {
+        "patterns": [
+          "Permissive CORS + weak CSP (CSP: default-src 'self' *)",
+          "CORS with Access-Control-Allow-Origin: * and no CSRF tokens on state-changing endpoints",
+          "CORS Allow-Credentials: true with session authentication but no CSRF protection"
+        ],
+        "risk_level": "critical"
+      },
+      "outdated_headers": {
+        "patterns": [
+          "CORS headers but missing Content-Security-Policy",
+          "CORS headers but missing X-Frame-Options",
+          "CORS headers but missing X-Content-Type-Options: nosniff",
+          "CORS Allow-Credentials: true but missing SameSite=strict on cookies"
+        ],
+        "risk_level": "medium"
+      }
+    }
+  }
+}

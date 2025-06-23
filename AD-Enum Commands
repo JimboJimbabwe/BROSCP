@@ -1,0 +1,327 @@
+# ===============================
+# LINUX INSECURE PERMISSIONS
+# ===============================
+
+# ===============================
+# WORLD-WRITABLE FILES & FOLDERS
+# ===============================
+
+# Find world-writable files
+find / -type f -perm -0002 -exec ls -l {} \; 2>/dev/null
+find / -perm -2 -type f 2>/dev/null
+
+# Find world-writable directories
+find / -type d -perm -0002 -exec ls -ld {} \; 2>/dev/null
+find / -perm -2 -type d 2>/dev/null
+
+# Find files writable by group
+find / -type f -perm -0020 2>/dev/null
+find / -perm -20 -type f 2>/dev/null
+
+# Find directories writable by group
+find / -type d -perm -0020 2>/dev/null
+
+# Find files/dirs with 777 permissions (dangerous!)
+find / -perm -777 2>/dev/null
+find / -type f -perm 0777 2>/dev/null
+find / -type d -perm 0777 2>/dev/null
+
+# ===============================
+# SUID/SGID FILES (PRIVILEGE ESCALATION)
+# ===============================
+
+# Find SUID files (run as owner)
+find / -perm -4000 -type f 2>/dev/null
+find / -perm -u=s -type f 2>/dev/null
+
+# Find SGID files (run as group)
+find / -perm -2000 -type f 2>/dev/null
+find / -perm -g=s -type f 2>/dev/null
+
+# Find both SUID and SGID
+find / -perm -6000 -type f 2>/dev/null
+find / \( -perm -4000 -o -perm -2000 \) -type f 2>/dev/null
+
+# Find SUID/SGID with detailed info
+find / \( -perm -4000 -o -perm -2000 \) -type f -exec ls -la {} \; 2>/dev/null
+
+# ===============================
+# CONFIGURATION FILES WITH WEAK PERMISSIONS
+# ===============================
+
+# Find config files readable by others
+find /etc -type f -perm -0004 2>/dev/null
+find /etc -type f -readable 2>/dev/null
+
+# Find config files writable by others
+find /etc -type f -perm -0002 2>/dev/null
+find /etc -type f -writable 2>/dev/null
+
+# Check specific sensitive files
+ls -la /etc/passwd /etc/shadow /etc/group /etc/gshadow
+ls -la /etc/sudoers /etc/ssh/sshd_config
+
+# Find backup files with weak permissions
+find / -name "*.bak" -type f -perm -0004 2>/dev/null
+find / -name "*~" -type f -perm -0004 2>/dev/null
+
+# ===============================
+# HOME DIRECTORY PERMISSIONS
+# ===============================
+
+# Check home directory permissions
+ls -la /home/
+find /home -type d -perm -0002 2>/dev/null
+
+# Find user files readable by others
+find /home -type f -perm -0004 2>/dev/null
+find /home -name ".*" -type f -perm -0004 2>/dev/null
+
+# Check SSH keys permissions
+find /home -name "*.pem" -o -name "id_*" -type f 2>/dev/null
+find /home -path "*/.ssh/*" -type f 2>/dev/null
+
+# ===============================
+# STICKY BIT AND SPECIAL PERMISSIONS
+# ===============================
+
+# Find directories without sticky bit (potential security issue)
+find / -type d -perm -1000 2>/dev/null
+
+# Find world-writable directories without sticky bit
+find / -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null
+
+# ===============================
+# FILE OWNERSHIP ISSUES
+# ===============================
+
+# Find files owned by root but writable by others
+find / -user root -perm -0002 -type f 2>/dev/null
+
+# Find files without owner (orphaned files)
+find / -nouser -type f 2>/dev/null
+find / -nogroup -type f 2>/dev/null
+
+# Find files owned by specific user
+find / -user username -type f 2>/dev/null
+
+# ===============================
+# WINDOWS INSECURE PERMISSIONS
+# ===============================
+
+# ===============================
+# POWERSHELL FILE/FOLDER PERMISSIONS
+# ===============================
+
+# Find files/folders with weak permissions using PowerShell
+Get-ChildItem -Path C:\ -Recurse | Get-Acl | Where-Object {$_.Access | Where-Object {$_.IdentityReference -eq "Everyone" -and $_.FileSystemRights -match "Write|FullControl"}}
+
+# Check specific directories for weak permissions
+Get-Acl C:\Windows\System32 | Format-List
+Get-Acl C:\Program Files | Format-List
+Get-Acl C:\ProgramData | Format-List
+
+# Find writable files in System32
+Get-ChildItem C:\Windows\System32 -Recurse | Get-Acl | Where-Object {$_.Access | Where-Object {$_.IdentityReference -eq "Users" -and $_.FileSystemRights -match "Write"}}
+
+# ===============================
+# USING ACCESSCHK (SYSINTERNALS)
+# ===============================
+
+# Check file permissions
+accesschk.exe -uwqs Users c:\*.*
+accesschk.exe -uwqs "Authenticated Users" c:\*.*
+accesschk.exe -uwqs Everyone c:\*.*
+
+# Check directory permissions
+accesschk.exe -uwdqs Users c:\
+accesschk.exe -uwdqs "Authenticated Users" c:\
+
+# Check service permissions
+accesschk.exe -uwcqv "Authenticated Users" *
+accesschk.exe -uwcqv Users *
+
+# Check registry permissions
+accesschk.exe -kwqs Users HKLM\SOFTWARE
+accesschk.exe -kwqs "Authenticated Users" HKLM\SYSTEM
+
+# ===============================
+# USING ICACLS (BUILT-IN WINDOWS)
+# ===============================
+
+# Check file/folder permissions
+icacls C:\Windows\System32
+icacls "C:\Program Files"
+icacls C:\ProgramData
+
+# Find files writable by Everyone
+icacls C:\*.* | findstr Everyone.*:F
+icacls C:\*.* | findstr Everyone.*:M
+icacls C:\*.* | findstr Everyone.*:W
+
+# Find files writable by Users
+icacls C:\*.* | findstr Users.*:F
+icacls C:\*.* | findstr Users.*:M
+
+# ===============================
+# ACTIVE DIRECTORY INSECURE PERMISSIONS
+# ===============================
+
+# ===============================
+# POWERVIEW AD PERMISSIONS
+# ===============================
+
+# Find users with write permissions on other users
+Get-DomainObjectAcl -Identity "Domain Users" | Where-Object {$_.ActiveDirectoryRights -match "WriteProperty|WriteDacl|WriteOwner"}
+
+# Find users who can modify computer objects
+Get-DomainObjectAcl -Identity "Domain Computers" | Where-Object {$_.ActiveDirectoryRights -match "WriteProperty|GenericWrite|GenericAll"}
+
+# Find users with dangerous permissions on domain
+Get-DomainObjectAcl -Identity "DC=domain,DC=com" | Where-Object {$_.ActiveDirectoryRights -match "WriteDacl|WriteOwner|GenericAll"}
+
+# Find GPO modification rights
+Get-DomainGPO | Get-DomainObjectAcl | Where-Object {$_.ActiveDirectoryRights -match "WriteProperty|WriteDacl|WriteOwner"}
+
+# Find users who can reset passwords
+Get-DomainObjectAcl | Where-Object {$_.ActiveDirectoryRights -match "ExtendedRight" -and $_.ObjectType -eq "00299570-246d-11d0-a768-00aa006e0529"}
+
+# ===============================
+# BLOODHOUND QUERIES (NEO4J CYPHER)
+# ===============================
+
+# Find users with GenericAll on computers
+MATCH (u:User)-[r:GenericAll]->(c:Computer) RETURN u.name, c.name
+
+# Find users who can write to GPOs
+MATCH (u:User)-[r:GenericWrite]->(g:GPO) RETURN u.name, g.name
+
+# Find shortest path to Domain Admins
+MATCH (u:User {owned:true}), (g:Group {name:"DOMAIN ADMINS@DOMAIN.COM"}), p=shortestPath((u)-[*1..]->(g)) RETURN p
+
+# Find users with DCSync rights
+MATCH (u:User)-[r:GetChanges|GetChangesAll]->(d:Domain) RETURN u.name
+
+# ===============================
+# SERVICE PERMISSIONS (WINDOWS)
+# ===============================
+
+# Check service permissions with sc
+sc qc ServiceName
+sc sdshow ServiceName
+
+# Find services with weak permissions
+Get-WmiObject -Class Win32_Service | Where-Object {$_.PathName -notmatch '"'} | Select Name, PathName
+
+# Check for unquoted service paths
+Get-WmiObject -Class Win32_Service | Where-Object {$_.PathName -notmatch '^".*"$' -and $_.PathName -match '.* .*'} | Select Name, PathName
+
+# ===============================
+# REGISTRY PERMISSIONS (WINDOWS)
+# ===============================
+
+# Check registry key permissions
+Get-Acl HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run | Format-List
+
+# Find registry keys writable by users
+accesschk.exe -kwus Users HKLM\SOFTWARE
+accesschk.exe -kwus "Authenticated Users" HKLM\SYSTEM
+
+# ===============================
+# AUTOMATED TOOLS FOR PERMISSION ENUMERATION
+# ===============================
+
+# ===============================
+# LINUX AUTOMATED TOOLS
+# ===============================
+
+# LinEnum.sh
+./LinEnum.sh -t
+
+# LinPEAS
+./linpeas.sh
+
+# Linux Smart Enumeration
+./lse.sh -l 1
+
+# Unix Privesc Check
+./unix-privesc-check standard
+
+# ===============================
+# WINDOWS AUTOMATED TOOLS
+# ===============================
+
+# WinPEAS
+.\winPEAS.exe
+
+# PowerUp (PowerShell)
+Import-Module PowerUp.ps1
+Invoke-AllChecks
+
+# PrivescCheck
+.\PrivescCheck.ps1
+
+# Seatbelt
+.\Seatbelt.exe -group=system
+
+# ===============================
+# SPECIFIC DANGEROUS PERMISSION PATTERNS
+# ===============================
+
+# ===============================
+# LINUX DANGEROUS PATTERNS
+# ===============================
+
+# Files in /tmp with SUID bit
+find /tmp -perm -4000 2>/dev/null
+
+# World-writable files in system directories
+find /bin /sbin /usr/bin /usr/sbin -perm -0002 -type f 2>/dev/null
+
+# Config files with passwords readable by all
+find /etc -name "*.conf" -type f -perm -0004 -exec grep -l "password\|passwd" {} \; 2>/dev/null
+
+# Cron files writable by users
+find /etc/cron* -type f -perm -0002 2>/dev/null
+
+# ===============================
+# WINDOWS DANGEROUS PATTERNS
+# ===============================
+
+# Executable files writable by Everyone/Users in system directories
+icacls "C:\Windows\System32\*.exe" | findstr Everyone.*:M
+icacls "C:\Windows\System32\*.exe" | findstr Users.*:M
+
+# DLL files with weak permissions (DLL hijacking)
+icacls "C:\Windows\System32\*.dll" | findstr Everyone.*:M
+
+# Service executables with weak permissions
+for /f "tokens=2 delims='='" %a in ('wmic service get name^,pathname /format:list ^| findstr /i pathname') do icacls "%a" | findstr Everyone.*:M
+
+# ===============================
+# PERMISSION VALUES REFERENCE
+# ===============================
+
+# Linux Octal Permissions:
+# 777 = rwxrwxrwx (read, write, execute for owner, group, others)
+# 755 = rwxr-xr-x (owner: rwx, group: r-x, others: r-x)
+# 644 = rw-r--r-- (owner: rw-, group: r--, others: r--)
+# 4000 = SUID bit
+# 2000 = SGID bit  
+# 1000 = Sticky bit
+
+# Windows Permission Letters:
+# F = Full Control
+# M = Modify
+# RX = Read & Execute
+# R = Read
+# W = Write
+# D = Delete
+
+# Active Directory Rights:
+# GenericAll = Full Control
+# GenericWrite = Write access
+# WriteProperty = Write specific properties
+# WriteDacl = Modify permissions
+# WriteOwner = Change ownership
+# ExtendedRight = Special permissions (like password reset)

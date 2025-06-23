@@ -1,0 +1,434 @@
+# ===============================
+# WINDOWS DOMAIN ACCOUNTS
+# ===============================
+
+## Built-in High-Privilege Groups
+Domain Admins
+Enterprise Admins
+Schema Admins
+Administrators (local)
+BUILTIN\Administrators
+
+## Service Accounts (Often Highly Privileged)
+SYSTEM
+NETWORK SERVICE
+LOCAL SERVICE
+NT AUTHORITY\SYSTEM
+NT AUTHORITY\NETWORK SERVICE
+NT AUTHORITY\LOCAL SERVICE
+
+## Machine/Computer Accounts
+DOMAIN\COMPUTERNAME$
+WORKGROUP\COMPUTERNAME$
+# Example: CONTOSO\WEB01$, CONTOSO\DC01$
+
+## Application Pool Identities (IIS)
+IIS APPPOOL\DefaultAppPool
+IIS APPPOOL\ApplicationPoolName
+IIS_IUSRS
+IUSR
+
+## SQL Server Service Accounts
+NT Service\MSSQLSERVER
+NT Service\SQLSERVERAGENT
+MSSQL$INSTANCENAME
+# Custom: domain\sql_service_account
+
+## Exchange Server Accounts
+DOMAIN\Exchange Servers
+DOMAIN\Exchange Trusted Subsystem
+DOMAIN\Exchange Organization Administrators
+
+## Backup/Recovery Accounts
+DOMAIN\Backup Operators
+BUILTIN\Backup Operators
+Backup service accounts
+Veeam service accounts
+CommVault service accounts
+
+## Certificate Services
+DOMAIN\Cert Publishers
+DOMAIN\Enterprise Cert Admins
+Certificate service accounts
+
+## ===============================
+# LINUX/UNIX PRIVILEGE ESCALATION TARGETS
+# ===============================
+
+## Superuser Accounts
+root
+toor (alternative root on some systems)
+
+## System Service Accounts
+bin
+daemon  
+adm
+lp
+sync
+shutdown
+halt
+mail
+operator
+games
+ftp
+nobody
+systemd-network
+systemd-resolve
+
+## Web Server Accounts
+www-data (Apache/Nginx on Debian/Ubuntu)
+apache (Apache on RHEL/CentOS)
+nginx
+http (Arch Linux)
+
+## Database Accounts
+mysql
+postgres
+postgresql
+mongodb
+redis
+oracle
+
+## Application-Specific Accounts
+jenkins
+tomcat
+elasticsearch
+docker
+gitlab-runner
+nexus
+
+## Privileged Groups (not users but important)
+sudo
+wheel (RHEL/CentOS)
+admin (some distributions)
+docker (dangerous - container escape)
+
+# ===============================
+# ACTIVE DIRECTORY SPECIAL ACCOUNTS
+# ===============================
+
+## Domain Controller Accounts
+DOMAIN\krbtgt (Kerberos ticket-granting ticket account)
+DOMAIN\KRBTGT_XXXXX (Read-only domain controller)
+
+## Built-in Security Principals
+Everyone
+Authenticated Users
+Interactive
+Network
+Batch
+Service
+Anonymous Logon
+Creator Owner
+Creator Group
+
+## Computer/Machine Account Patterns
+DOMAIN\COMPUTERNAME$
+# Examples:
+CONTOSO\WEB-SERVER$
+CONTOSO\SQL-PROD$
+CONTOSO\DC-PRIMARY$
+CONTOSO\EXCHANGE01$
+
+## Service Principal Names (SPNs)
+HTTP/webserver.domain.com
+MSSQL/sqlserver.domain.com  
+HOST/computer.domain.com
+LDAP/dc.domain.com
+CIFS/fileserver.domain.com
+
+# ===============================
+# CLOUD PLATFORM ACCOUNTS
+# ===============================
+
+## AWS IAM Accounts
+root (AWS account root)
+Administrator (IAM user)
+PowerUser
+EC2 instance roles
+Lambda execution roles
+S3 service accounts
+
+## Azure AD Accounts
+Global Administrator
+Privileged Role Administrator
+Security Administrator
+Application Administrator
+Cloud Application Administrator
+# Managed identities for Azure resources
+
+## Google Cloud Platform
+Owner
+Editor  
+Viewer
+Service accounts
+Compute Engine default service account
+
+# ===============================
+# APPLICATION-SPECIFIC ACCOUNTS
+# ===============================
+
+## Database Administrative Accounts
+
+### MySQL/MariaDB
+root@localhost
+root@%
+mysql.sys
+mysql.session
+
+### PostgreSQL
+postgres
+postgresql
+
+### Microsoft SQL Server
+sa (system administrator)
+BUILTIN\Administrators
+NT SERVICE\MSSQLSERVER
+
+### Oracle
+SYS
+SYSTEM
+SYSMAN
+SCOTT (often default/weak)
+
+### MongoDB
+admin
+root
+__system
+
+## Web Application Accounts
+
+### WordPress
+wp-admin
+administrator  
+admin
+editor
+author
+
+### Drupal
+admin
+administrator
+root
+user1
+
+### Joomla
+admin
+administrator
+super user
+
+### Generic Web Apps
+admin
+administrator
+root
+superuser
+operator
+manager
+guest
+test
+demo
+
+## Network Device Accounts
+
+### Cisco
+admin
+cisco
+enable
+manager
+
+### Juniper
+admin
+root
+netscreen
+
+### HP/Dell/Generic
+admin
+administrator
+manager
+operator
+
+# ===============================
+# KERBEROS ATTACK TARGETS
+# ===============================
+
+## Kerberoastable Accounts (Have SPNs)
+Service accounts with SPNs set
+Computer accounts (COMPUTERNAME$)
+Custom service accounts
+
+## ASREPRoastable Accounts  
+Accounts with "Do not require Kerberos preauthentication"
+Usually misconfigured user accounts
+
+## Golden/Silver Ticket Targets
+krbtgt (Golden ticket - compromise entire domain)
+Service accounts (Silver ticket - compromise specific services)
+
+# ===============================
+# SPECIAL WINDOWS ACCOUNT TYPES
+# ===============================
+
+## Virtual Accounts (Windows 2008+)
+NT SERVICE\ServiceName
+# Examples:
+NT SERVICE\WinRM
+NT SERVICE\Schedule  
+NT SERVICE\BITS
+
+## Managed Service Accounts (MSA)
+DOMAIN\ServiceAccount$ (ends with $)
+Group Managed Service Accounts (gMSA)
+
+## Well-Known SIDs
+S-1-1-0 (Everyone)
+S-1-5-18 (Local System)
+S-1-5-19 (NT Authority\Local Service)
+S-1-5-20 (NT Authority\Network Service)
+S-1-5-32-544 (BUILTIN\Administrators)
+
+# ===============================
+# CONTAINERIZATION ACCOUNTS
+# ===============================
+
+## Docker
+docker (group membership = root equivalent)
+Container runtime accounts
+
+## Kubernetes
+kubernetes-admin
+system:admin
+kube-system service accounts
+default service accounts
+
+## Container-specific
+containerd
+runc
+cri-o
+
+# ===============================
+# VIRTUALIZATION PLATFORM ACCOUNTS
+# ===============================
+
+## VMware
+root (ESXi)
+administrator@vsphere.local
+vpxuser (vCenter)
+
+## Hyper-V
+DOMAIN\VMMS Service Account
+NT VIRTUAL MACHINE\Virtual Machines
+
+## Citrix
+DOMAIN\XenApp Service Account
+DOMAIN\XenDesktop Service Account
+
+# ===============================
+# COMMON PRIVILEGE ESCALATION PATHS
+# ===============================
+
+## Low Privilege → Service Account
+User account → Service account with higher privileges
+Guest → IUSR → Application Pool Identity
+
+## Service Account → SYSTEM
+Application Pool → Local Service → SYSTEM
+Network Service → SYSTEM
+
+## User → Domain Admin
+Regular user → Local admin → Domain admin
+Service account → Domain service account → Domain admin
+
+## Machine Account Compromise
+User on computer → Computer account (COMPUTERNAME$) → 
+Domain privileges of computer account
+
+# ===============================
+# ENUMERATION TARGETS BY PRIVILEGE LEVEL
+# ===============================
+
+## Immediate High-Value Targets
+Administrator/root
+SYSTEM/NT AUTHORITY\SYSTEM  
+Domain Admins
+Enterprise Admins
+
+## Medium-Value Service Targets
+SQL Server service accounts
+IIS Application Pool accounts
+Backup service accounts
+Monitoring service accounts
+
+## Lateral Movement Targets
+Local administrators on other machines
+Service accounts with network access
+Shared service accounts across multiple systems
+
+## Persistence Targets
+Accounts with logon as service rights
+Accounts with scheduled task permissions
+Service accounts with startup programs
+
+# ===============================
+# ACCOUNT NAMING PATTERNS TO LOOK FOR
+# ===============================
+
+## Common Patterns
+svc_* (service accounts)
+sql_* (database accounts)  
+web_* (web service accounts)
+backup_* (backup accounts)
+monitor_* (monitoring accounts)
+admin_* (administrative accounts)
+
+## Legacy/Default Patterns
+Administrator
+Guest (often disabled but check)
+DefaultAccount (Windows 10+)
+WDAGUtilityAccount (Windows Defender)
+
+## Application-Specific Patterns
+jenkins_service
+tomcat_user
+elastic_search
+redis_server
+mongodb_admin
+
+# ===============================
+# ATTACK METHODOLOGY
+# ===============================
+
+## Phase 1: Enumerate Current Context
+whoami
+whoami /groups
+whoami /priv
+id (Linux)
+
+## Phase 2: Enumerate Available Accounts
+net user (Windows local)
+net user /domain (Windows domain)
+cat /etc/passwd (Linux)
+Get-LocalUser (PowerShell)
+
+## Phase 3: Target High-Value Accounts
+Look for service accounts
+Check for admin group memberships
+Identify machine accounts
+Find accounts with SPNs
+
+## Phase 4: Escalation Techniques
+Service exploitation
+Credential harvesting  
+Token impersonation
+Kerberoasting
+Privilege abuse
+
+# ===============================
+# RED FLAGS / HIGH-VALUE INDICATORS
+# ===============================
+
+## Accounts to Prioritize
+Any account ending in $ (machine accounts)
+Accounts with "service" in the name
+Accounts in administrators groups
+Accounts with SeDebugPrivilege
+Accounts with SeTcbPrivilege
+Accounts with SeBackupPrivilege

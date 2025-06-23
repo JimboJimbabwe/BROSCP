@@ -1,0 +1,139 @@
+{
+  "web_servers": {
+    "apache": {
+      "high_impact": ["`", "%00", "\\", "\"", "'"],
+      "medium_impact": [";", "|", "&", "$", "(", ")", "{", "}", "[", "]"],
+      "low_impact": ["%20", "%0a", "%0d", "~", "#"],
+      "notes": "Backtick can trigger command substitution, null bytes bypass filters, quotes break .htaccess parsing"
+    },
+    "nginx": {
+      "high_impact": ["%20", "%00", "//", ";", "%0a"],
+      "medium_impact": ["\\", "\"", "'", "%c0%af", "%2f"],
+      "low_impact": ["%09", "%0c", "%0d", "~"],
+      "notes": "Space handling inconsistencies, path normalization issues, semicolon config conflicts"
+    },
+    "iis": {
+      "high_impact": [":", "|", "\"", "%00", "\\\\"],
+      "medium_impact": ["CON", "PRN", "AUX", "NUL", "LPT1", "COM1", "<", ">"],
+      "low_impact": ["%20", ".", " ", "%2e"],
+      "notes": "Windows reserved names, NTFS alternate data streams, trailing dots/spaces ignored"
+    },
+    "tomcat": {
+      "high_impact": ["%00", ";", "\\", "%2f"],
+      "medium_impact": ["%20", "\"", "'", "%5c"],
+      "low_impact": ["%09", "%0a", "%0d"],
+      "notes": "Java servlet path handling, semicolon parameter separation, backslash normalization"
+    },
+    "lighttpd": {
+      "high_impact": ["%00", "\\", "%20"],
+      "medium_impact": ["\"", "'", ";", "%0a"],
+      "low_impact": ["%09", "%0d", "~"],
+      "notes": "Lightweight server with fewer handlers, but path normalization issues persist"
+    }
+  },
+  "frameworks": {
+    "nodejs_express": {
+      "high_impact": ["%00", "%2e%2e", "\\", "%c0%af"],
+      "medium_impact": ["\"", "'", "`", "%20"],
+      "low_impact": ["%0a", "%0d", ";"],
+      "notes": "Unicode normalization bypass, null byte truncation, overlong encoding"
+    },
+    "php": {
+      "high_impact": ["%00", "php://", "data://", "'", "\""],
+      "medium_impact": ["\\", "expect://", "file://", ";"],
+      "low_impact": ["%0a", "%0d", "%20"],
+      "notes": "Stream wrappers, null byte bypass, magic quotes, file inclusion"
+    },
+    "python_django": {
+      "high_impact": ["%00", "\\", "%c0%af", "%ef%bf%bd"],
+      "medium_impact": ["\"", "'", "%20", "%0a"],
+      "low_impact": ["%09", "%0d", ";"],
+      "notes": "Unicode decode errors, path separator mixing, malformed UTF-8"
+    },
+    "python_flask": {
+      "high_impact": ["%00", "\\", "%2e%2e", "../"],
+      "medium_impact": ["\"", "'", "%20", "%0a"],
+      "low_impact": ["%09", "%0d", ";"],
+      "notes": "Werkzeug path handling, debug mode information disclosure"
+    },
+    "java_spring": {
+      "high_impact": ["%00", ";", "\\", "%2f"],
+      "medium_impact": ["%20", "\"", "'", "%c0%af"],
+      "low_impact": ["%0a", "%0d", "%09"],
+      "notes": "Servlet path parameters, classpath resource access, Spring Boot actuator endpoints"
+    },
+    "ruby_rails": {
+      "high_impact": ["%00", "\\", "%2e%2e", "file://"],
+      "medium_impact": ["\"", "'", "%20", "%0a"],
+      "low_impact": ["%09", "%0d", ";"],
+      "notes": "Ruby file handling quirks, Rack middleware processing"
+    },
+    "asp_net": {
+      "high_impact": [":", "\\\\", "%00", "CON", "PRN"],
+      "medium_impact": ["\"", "'", "|", "<", ">"],
+      "low_impact": ["%20", ".", " "],
+      "notes": "Windows filesystem integration, reserved device names, IIS integration"
+    }
+  },
+  "databases": {
+    "mysql": {
+      "high_impact": ["'", "\"", ";", "--", "/*", "*/"],
+      "medium_impact": ["%00", "\\", "%27", "%22"],
+      "low_impact": ["%20", "%0a", "%0d"],
+      "notes": "SQL injection vectors, comment syntax, quote escaping"
+    },
+    "postgresql": {
+      "high_impact": ["'", "\"", ";", "--", "/*", "$"],
+      "medium_impact": ["%00", "\\", "$$", "CHR("],
+      "low_impact": ["%20", "%0a", "%0d"],
+      "notes": "Dollar quoting, function calls, advanced SQL features"
+    },
+    "mssql": {
+      "high_impact": ["'", "\"", ";", "--", "/*", "xp_"],
+      "medium_impact": ["%00", "\\", "EXEC", "sp_"],
+      "low_impact": ["%20", "%0a", "%0d"],
+      "notes": "Extended procedures, stored procedure execution, Windows integration"
+    },
+    "mongodb": {
+      "high_impact": ["$", "{", "}", ";", "//"],
+      "medium_impact": ["\"", "'", "\\", "ObjectId"],
+      "low_impact": ["%20", "%0a", "%0d"],
+      "notes": "NoSQL injection, JavaScript execution, JSON parsing"
+    }
+  },
+  "cloud_services": {
+    "aws_s3": {
+      "high_impact": ["../", "%2e%2e", "\\", "%00"],
+      "medium_impact": [":", ";", "?", "&"],
+      "low_impact": ["%20", "%0a", "%0d"],
+      "notes": "Bucket traversal, presigned URL manipulation, metadata injection"
+    },
+    "aws_lambda": {
+      "high_impact": ["%00", "\\", "../", "file://"],
+      "medium_impact": ["\"", "'", ";", "`"],
+      "low_impact": ["%20", "%0a", "%0d"],
+      "notes": "Serverless runtime isolation bypass, environment variable access"
+    },
+    "cloudflare": {
+      "high_impact": ["%00", "\\", "%0a", "%0d"],
+      "medium_impact": ["\"", "'", ";", "%20"],
+      "low_impact": ["%09", "~", "#"],
+      "notes": "WAF bypass techniques, caching behavior manipulation"
+    }
+  },
+  "special_encodings": {
+    "unicode_overlong": ["%c0%af", "%e0%80%af", "%f0%80%80%af"],
+    "double_encoding": ["%252e", "%252f", "%2527", "%2522"],
+    "mixed_encoding": ["%2e.", ".%2e", "%2f/", "/%2f"],
+    "null_variants": ["%00", "%u0000", "\\x00", "\\0"],
+    "newline_variants": ["%0a", "%0d", "%0d%0a", "\\n", "\\r\\n"],
+    "space_variants": ["%20", "%09", "%0c", "+", "\\t"]
+  },
+  "testing_methodology": {
+    "single_char_tests": ["`", "'", "\"", "\\", "%00", ";", "|", "&"],
+    "path_manipulation": ["../", "..\\", "%2e%2e%2f", "%2e%2e%5c"],
+    "command_injection": ["`", ";", "|", "&", "$", "(", ")", "{", "}"],
+    "error_generation": ["'", "\"", "%00", "\\", "CON", "PRN", "AUX"],
+    "encoding_bypass": ["%c0%af", "%252e", "%u0000", "\\x00"]
+  }
+}

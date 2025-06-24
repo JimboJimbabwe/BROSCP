@@ -1,0 +1,364 @@
+{
+  "oscp_reconnaissance_locations": {
+    "linux": {
+      "users": {
+        "account_files": [
+          "/etc/passwd",
+          "/etc/shadow",
+          "/etc/group",
+          "/etc/gshadow",
+          "/etc/sudoers",
+          "/etc/sudoers.d/*"
+        ],
+        "user_directories": [
+          "/home/*",
+          "/root",
+          "/var/mail/*",
+          "/var/spool/mail/*"
+        ],
+        "ssh_keys": [
+          "/home/*/.ssh/",
+          "/root/.ssh/",
+          "/etc/ssh/",
+          "/home/*/.ssh/id_rsa",
+          "/home/*/.ssh/id_dsa",
+          "/home/*/.ssh/id_ecdsa",
+          "/home/*/.ssh/id_ed25519",
+          "/home/*/.ssh/authorized_keys",
+          "/home/*/.ssh/known_hosts"
+        ],
+        "bash_history": [
+          "/home/*/.bash_history",
+          "/root/.bash_history",
+          "/home/*/.zsh_history",
+          "/home/*/.history"
+        ]
+      },
+      "files": {
+        "configuration_files": [
+          "/etc/hosts",
+          "/etc/resolv.conf",
+          "/etc/fstab",
+          "/etc/exports",
+          "/etc/crontab",
+          "/etc/anacrontab",
+          "/var/spool/cron/crontabs/*",
+          "/etc/cron.d/*",
+          "/etc/cron.daily/*",
+          "/etc/cron.hourly/*",
+          "/etc/cron.monthly/*",
+          "/etc/cron.weekly/*"
+        ],
+        "sensitive_files": [
+          "/etc/mysql/my.cnf",
+          "/etc/postgresql/*/main/pg_hba.conf",
+          "/home/*/.mysql_history",
+          "/home/*/.psql_history",
+          "/var/www/html/config.php",
+          "/var/www/html/wp-config.php",
+          "/opt/*/config/*",
+          "/usr/local/*/config/*"
+        ],
+        "backup_files": [
+          "/var/backups/*",
+          "/backup/*",
+          "/tmp/*.bak",
+          "/tmp/*.backup",
+          "/home/*/*.bak",
+          "*.sql",
+          "*.tar.gz",
+          "*.zip"
+        ]
+      },
+      "folders": {
+        "system_directories": [
+          "/etc/",
+          "/opt/",
+          "/usr/local/",
+          "/var/",
+          "/tmp/",
+          "/dev/shm/"
+        ],
+        "web_directories": [
+          "/var/www/",
+          "/var/www/html/",
+          "/usr/share/nginx/html/",
+          "/srv/http/",
+          "/opt/lampp/htdocs/"
+        ],
+        "application_directories": [
+          "/opt/",
+          "/usr/local/bin/",
+          "/usr/local/sbin/",
+          "/home/*/bin/",
+          "/home/*/scripts/"
+        ]
+      },
+      "apps": {
+        "installed_packages": [
+          "/var/lib/dpkg/status",
+          "/var/log/dpkg.log",
+          "/var/cache/apt/archives/",
+          "/etc/apt/sources.list",
+          "/etc/apt/sources.list.d/*",
+          "/var/lib/rpm/",
+          "/etc/yum.repos.d/*"
+        ],
+        "running_services": [
+          "/etc/systemd/system/",
+          "/lib/systemd/system/",
+          "/etc/init.d/",
+          "/etc/rc.local",
+          "/etc/xinetd.d/*"
+        ],
+        "suid_sgid_binaries": [
+          "find / -perm -4000 2>/dev/null",
+          "find / -perm -2000 2>/dev/null",
+          "find / -perm -1000 2>/dev/null"
+        ]
+      },
+      "logs": {
+        "system_logs": [
+          "/var/log/syslog",
+          "/var/log/messages",
+          "/var/log/kern.log",
+          "/var/log/dmesg",
+          "/var/log/boot.log",
+          "/var/log/faillog",
+          "/var/log/lastlog"
+        ],
+        "authentication_logs": [
+          "/var/log/auth.log",
+          "/var/log/secure",
+          "/var/log/wtmp",
+          "/var/log/utmp",
+          "/var/log/btmp"
+        ],
+        "application_logs": [
+          "/var/log/apache2/",
+          "/var/log/nginx/",
+          "/var/log/mysql/",
+          "/var/log/postgresql/",
+          "/var/log/mail.log",
+          "/var/log/cron.log"
+        ]
+      },
+      "metadata": {
+        "process_information": [
+          "/proc/*/cmdline",
+          "/proc/*/environ",
+          "/proc/*/status",
+          "/proc/version",
+          "/proc/cpuinfo",
+          "/proc/meminfo"
+        ],
+        "network_information": [
+          "/proc/net/tcp",
+          "/proc/net/udp",
+          "/proc/net/route",
+          "/proc/net/arp",
+          "/etc/network/interfaces",
+          "/etc/netplan/*"
+        ],
+        "mount_information": [
+          "/proc/mounts",
+          "/proc/filesystems",
+          "/etc/mtab"
+        ]
+      },
+      "system_data": {
+        "kernel_modules": [
+          "/proc/modules",
+          "/lib/modules/",
+          "/etc/modprobe.d/*"
+        ],
+        "device_information": [
+          "/proc/devices",
+          "/dev/",
+          "/sys/class/",
+          "/proc/bus/"
+        ],
+        "environment_variables": [
+          "/proc/*/environ",
+          "/etc/environment",
+          "/etc/profile",
+          "/etc/bash.bashrc",
+          "/home/*/.bashrc",
+          "/home/*/.profile"
+        ]
+      }
+    },
+    "windows": {
+      "users": {
+        "user_accounts": [
+          "C:\\Users\\",
+          "C:\\Documents and Settings\\",
+          "HKLM\\SAM\\SAM\\Domains\\Account\\Users\\",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\",
+          "C:\\Windows\\System32\\config\\SAM",
+          "C:\\Windows\\System32\\config\\SECURITY"
+        ],
+        "user_profiles": [
+          "C:\\Users\\*\\Desktop\\",
+          "C:\\Users\\*\\Documents\\",
+          "C:\\Users\\*\\Downloads\\",
+          "C:\\Users\\*\\AppData\\Roaming\\",
+          "C:\\Users\\*\\AppData\\Local\\",
+          "C:\\Users\\*\\AppData\\LocalLow\\"
+        ],
+        "credentials": [
+          "C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Credentials\\",
+          "C:\\Users\\*\\AppData\\Local\\Microsoft\\Credentials\\",
+          "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Local\\Microsoft\\Credentials\\",
+          "HKLM\\SECURITY\\Policy\\Secrets\\",
+          "HKCU\\Software\\Microsoft\\Protected Storage System Provider\\"
+        ]
+      },
+      "files": {
+        "system_files": [
+          "C:\\Windows\\System32\\drivers\\etc\\hosts",
+          "C:\\Windows\\System32\\config\\*",
+          "C:\\Windows\\inf\\setupapi.dev.log",
+          "C:\\Windows\\Panther\\",
+          "C:\\sysprep\\sysprep.xml",
+          "C:\\unattend.xml",
+          "C:\\Windows\\system32\\sysprep\\unattend.xml"
+        ],
+        "application_files": [
+          "C:\\inetpub\\wwwroot\\",
+          "C:\\xampp\\htdocs\\",
+          "C:\\wamp\\www\\",
+          "C:\\Program Files\\*\\config\\",
+          "C:\\Program Files (x86)\\*\\config\\",
+          "*.config",
+          "web.config",
+          "app.config"
+        ],
+        "backup_files": [
+          "C:\\Backup\\",
+          "C:\\Backups\\",
+          "*.bak",
+          "*.backup",
+          "*.old",
+          "*.sql",
+          "*.zip",
+          "*.rar"
+        ]
+      },
+      "folders": {
+        "system_directories": [
+          "C:\\Windows\\",
+          "C:\\Windows\\System32\\",
+          "C:\\Windows\\SysWOW64\\",
+          "C:\\ProgramData\\",
+          "C:\\Program Files\\",
+          "C:\\Program Files (x86)\\"
+        ],
+        "temp_directories": [
+          "C:\\Temp\\",
+          "C:\\Windows\\Temp\\",
+          "C:\\Users\\*\\AppData\\Local\\Temp\\",
+          "%TEMP%\\",
+          "%TMP%\\"
+        ],
+        "web_directories": [
+          "C:\\inetpub\\",
+          "C:\\inetpub\\wwwroot\\",
+          "C:\\xampp\\",
+          "C:\\wamp\\",
+          "C:\\apache\\",
+          "C:\\nginx\\"
+        ]
+      },
+      "apps": {
+        "installed_programs": [
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\",
+          "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\",
+          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\",
+          "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\",
+          "C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\"
+        ],
+        "services": [
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\",
+          "C:\\Windows\\System32\\drivers\\",
+          "C:\\Windows\\SysWOW64\\drivers\\",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\",
+          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\"
+        ],
+        "scheduled_tasks": [
+          "C:\\Windows\\System32\\Tasks\\",
+          "C:\\Windows\\Tasks\\",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree\\"
+        ]
+      },
+      "logs": {
+        "event_logs": [
+          "C:\\Windows\\System32\\winevt\\Logs\\Application.evtx",
+          "C:\\Windows\\System32\\winevt\\Logs\\Security.evtx",
+          "C:\\Windows\\System32\\winevt\\Logs\\System.evtx",
+          "C:\\Windows\\System32\\winevt\\Logs\\Setup.evtx",
+          "C:\\Windows\\System32\\winevt\\Logs\\Microsoft-Windows-PowerShell%4Operational.evtx"
+        ],
+        "iis_logs": [
+          "C:\\inetpub\\logs\\LogFiles\\",
+          "C:\\Windows\\System32\\LogFiles\\W3SVC1\\",
+          "C:\\Windows\\System32\\LogFiles\\HTTPERR\\"
+        ],
+        "application_logs": [
+          "C:\\ProgramData\\*\\Logs\\",
+          "C:\\Program Files\\*\\Logs\\",
+          "C:\\Users\\*\\AppData\\Local\\*\\Logs\\",
+          "C:\\Windows\\Logs\\"
+        ]
+      },
+      "metadata": {
+        "registry_locations": [
+          "HKLM\\SOFTWARE\\",
+          "HKLM\\SYSTEM\\",
+          "HKLM\\SECURITY\\",
+          "HKLM\\SAM\\",
+          "HKCU\\SOFTWARE\\",
+          "HKU\\*\\SOFTWARE\\",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\",
+          "HKLM\\SYSTEM\\CurrentControlSet\\"
+        ],
+        "recent_files": [
+          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RecentDocs\\",
+          "C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Windows\\Recent\\",
+          "C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Office\\Recent\\",
+          "HKCU\\SOFTWARE\\Microsoft\\Office\\*\\*\\File MRU\\"
+        ],
+        "network_shares": [
+          "HKLM\\SYSTEM\\CurrentControlSet\\Services\\lanmanserver\\Shares\\",
+          "C:\\Windows\\System32\\drivers\\etc\\lmhosts",
+          "net share",
+          "net use"
+        ]
+      },
+      "system_data": {
+        "startup_programs": [
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\",
+          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\",
+          "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\",
+          "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\",
+          "C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\"
+        ],
+        "environment_variables": [
+          "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\\",
+          "HKCU\\Environment\\",
+          "set",
+          "Get-ChildItem Env:"
+        ],
+        "hardware_information": [
+          "HKLM\\HARDWARE\\",
+          "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\",
+          "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\",
+          "wmic computersystem",
+          "systeminfo"
+        ]
+      }
+    }
+  }
+}
